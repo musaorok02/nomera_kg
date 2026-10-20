@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Каталог марок и регионов — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1>Каталог</h1>
+<div class="cols">
+  <div>
+    <h2>Марки</h2>
+    <div class="chips">
+      {% for b in brands %}<a class="chip" href="{% url 'catalog:brand' b.slug %}">{{ b.name }} <small>{{ b.n }}</small></a>{% endfor %}
+    </div>
+  </div>
+  <div>
+    <h2>Регионы</h2>
+    <div class="chips">
+      {% for r in regions %}<a class="chip" href="{% url 'catalog:region' r.code %}">{{ r.code }} · {{ r.name }} <small>{{ r.n }}</small></a>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

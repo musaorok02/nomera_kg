@@ -1,0 +1,10 @@
+<a class="card" href="{% url 'catalog:photo' p.pk %}">
+  <img src="{{ p.thumb.url }}" loading="lazy" alt="{{ p.plate_display }} {{ p.brand|default:'' }} {{ p.car_model|default:'' }}">
+  <div class="card-body">
+    <span class="plate">{{ p.plate_display }}</span>
+    {% if p.status != 'approved' %}<span class="tag {{ p.status }}">{{ p.get_status_display }}</span>{% endif %}
+    <div class="meta">
+      {% if p.brand %}{{ p.brand }}{% if p.car_model %} {{ p.car_model.name }}{% endif %} · {% endif %}♥ {{ p.likes_count }} · 💬 {{ p.comments_count }}
+    </div>
+  </div>
+</a>

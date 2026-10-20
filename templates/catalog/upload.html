@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Добавить фото — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1>Добавить фото</h1>
+<div class="panel prose muted small">
+  Фотографируйте автомобили в общедоступных местах. Номер должен быть читаем. Не публикуйте снимки, где крупно видны лица людей, и не указывайте данные владельцев.
+  Подробнее в <a href="{% url 'catalog:rules' %}">правилах</a>. Новые фото проходят проверку модератором.
+</div>
+<form class="stack narrow" method="post" enctype="multipart/form-data" style="max-width:760px">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <p>{{ form.image.label_tag }}{{ form.image }}<span class="helptext">JPG/PNG/WebP, до {{ MAX_UPLOAD_MB|default:8 }} МБ, не меньше 400×300. EXIF (в т.ч. геометки) удаляется.</span>{{ form.image.errors }}</p>
+  <p>{{ form.plate.label_tag }}{{ form.plate }}<span class="helptext">Любой регистр, пробелы и «KG» не важны.</span>{{ form.plate.errors }}</p>
+  <div class="formgrid">
+    <p>{{ form.brand.label_tag }}{{ form.brand }}{{ form.brand.errors }}</p>
+    <p>{{ form.car_model.label_tag }}{{ form.car_model }}{{ form.car_model.errors }}</p>
+    <p>{{ form.region.label_tag }}{{ form.region }}<span class="helptext">Если пусто, определим по номеру.</span>{{ form.region.errors }}</p>
+    <p>{{ form.shot_date.label_tag }}{{ form.shot_date }}{{ form.shot_date.errors }}</p>
+  </div>
+  <p>{{ form.city.label_tag }}{{ form.city }}{{ form.city.errors }}</p>
+  <p>{{ form.description.label_tag }}{{ form.description }}{{ form.description.errors }}</p>
+  <p><button class="primary" type="submit">Загрузить</button></p>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var brand = document.getElementById('id_brand');
+  var model = document.getElementById('id_car_model');
+  if (!brand || !model) return;
+  var all = Array.prototype.slice.call(model.options).map(function (o) { return o.cloneNode(true); });
+  function refresh() {
+    var id = brand.value;
+    var current = model.value;
+    model.innerHTML = '';
+    if (!id) { all.forEach(function (o) { model.appendChild(o.cloneNode(true)); }); model.value = current; return; }
+    var empty = document.createElement('option'); empty.value = ''; empty.textContent = '— не указано —';
+    model.appendChild(empty);
+    fetch('{% url "catalog:api_models" %}?brand=' + encodeURIComponent(id))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        d.models.forEach(function (m) {
+          var o = document.createElement('option'); o.value = m.id; o.textContent = m.name; model.appendChild(o);
+        });
+        model.value = current;
+      });
+  }
+  brand.addEventListener('change', function () { model.value = ''; refresh(); });
+  if (brand.value) refresh();
+})();
+</script>
+{% endblock %}

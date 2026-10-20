@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Жалоба на фото — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1>Жалоба на фото</h1>
+<div class="panel" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+  <img src="{{ photo.thumb.url }}" alt="" style="width:160px;border-radius:8px">
+  <div><span class="plate">{{ photo.plate_display }}</span><div class="muted small">Фото #{{ photo.pk }}</div></div>
+</div>
+<p class="muted">Если вы владелец автомобиля и хотите убрать фото, выберите первую причину. Мы рассматриваем такие обращения в приоритетном порядке.</p>
+<form class="stack narrow" method="post">
+  {% csrf_token %}
+  <p>{{ form.reason.label_tag }}{{ form.reason }}{{ form.reason.errors }}</p>
+  <p>{{ form.text.label_tag }}{{ form.text }}{{ form.text.errors }}</p>
+  <p>{{ form.contact.label_tag }}{{ form.contact }}<span class="helptext">{{ form.contact.help_text }}</span>{{ form.contact.errors }}</p>
+  <p><button class="primary" type="submit">Отправить</button> <a href="{{ photo.get_absolute_url }}">Отмена</a></p>
+</form>
+{% endblock %}

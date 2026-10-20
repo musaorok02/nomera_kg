@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Номер {{ display }} — фото ({{ count }}) — {{ SITE_NAME }}{% endblock %}
+{% block description %}Фотографии автомобиля с госномером {{ display }}{% if brands %}: {{ brands|join:", " }}{% endif %}.{% endblock %}
+{% block content %}
+<h1><span class="plate big">{{ display }}</span></h1>
+<p class="muted">
+  Фото: {{ count }}
+  {% if region %} · Регион: <a href="{% url 'catalog:region' region.code %}">{{ region.code }} — {{ region.name }}</a>{% endif %}
+  {% if brands %} · Замечено как: {{ brands|join:", " }}{% endif %}
+</p>
+<div class="grid">{% for p in page %}{% include "catalog/_card.html" %}{% endfor %}</div>
+{% include "catalog/_pager.html" %}
+<p><a class="btn" href="{% url 'catalog:upload' %}">Добавить фото этого номера</a></p>
+{% endblock %}

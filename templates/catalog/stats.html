@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Статистика — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1>Статистика</h1>
+<div class="counters" style="justify-content:flex-start">
+  <div><b>{{ total_photos }}</b><span class="muted">фото</span></div>
+  <div><b>{{ total_plates }}</b><span class="muted">номеров</span></div>
+  <div><b>{{ total_comments }}</b><span class="muted">комментариев</span></div>
+</div>
+
+<div class="cols">
+  <div class="panel">
+    <h2 style="margin-top:0">По регионам</h2>
+    <table class="t">
+      {% for r in regions %}
+        <tr><td><a href="{% url 'catalog:region' r.code %}">{{ r.code }} · {{ r.name }}</a></td>
+            <td style="width:40%"><div class="bar"><i style="width:{{ r.pct }}%"></i></div></td><td>{{ r.n }}</td></tr>
+      {% empty %}<tr><td class="muted">Нет данных</td></tr>{% endfor %}
+    </table>
+  </div>
+  <div class="panel">
+    <h2 style="margin-top:0">Популярные марки</h2>
+    <table class="t">
+      {% for b in brands %}
+        <tr><td><a href="{% url 'catalog:brand' b.slug %}">{{ b.name }}</a></td>
+            <td style="width:40%"><div class="bar"><i style="width:{{ b.pct }}%"></i></div></td><td>{{ b.n }}</td></tr>
+      {% empty %}<tr><td class="muted">Нет данных</td></tr>{% endfor %}
+    </table>
+  </div>
+  <div class="panel">
+    <h2 style="margin-top:0">Чаще всего фотографируют</h2>
+    <table class="t">
+      {% for p in top_plates %}
+        <tr><td><a href="{% url 'catalog:plate' p.plate %}"><span class="plate">{{ p.display }}</span></a></td><td>{{ p.n }} фото</td></tr>
+      {% empty %}<tr><td class="muted">Нет данных</td></tr>{% endfor %}
+    </table>
+  </div>
+  <div class="panel">
+    <h2 style="margin-top:0">Лучшие авторы</h2>
+    <table class="t">
+      {% for u in top_users %}
+        <tr><td><a href="{% url 'catalog:profile' u.username %}">{{ u.username }}</a></td><td>{{ u.n }} фото</td></tr>
+      {% empty %}<tr><td class="muted">Нет данных</td></tr>{% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

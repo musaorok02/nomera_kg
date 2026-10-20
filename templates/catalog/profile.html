@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ owner.username }} — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1>{{ owner.username }}</h1>
+<p class="muted">На сайте с {{ owner.date_joined|date:"d.m.Y" }} · Фото: {{ photo_count }} · Номеров: {{ plate_count }} · Лайков: {{ likes_total }}
+  {% if is_owner %} · <a href="{% url 'accounts:password_change' %}">Сменить пароль</a>{% endif %}</p>
+{% if page.object_list %}
+  <div class="grid">{% for p in page %}{% include "catalog/_card.html" %}{% endfor %}</div>
+  {% include "catalog/_pager.html" %}
+{% else %}
+  <div class="panel">Фото пока нет.{% if is_owner %} <a href="{% url 'catalog:upload' %}">Загрузить</a>{% endif %}</div>
+{% endif %}
+{% endblock %}

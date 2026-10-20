@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+{% if show_period %}
+  <div class="chips" style="margin-bottom:16px">
+    <a class="chip" href="?period=day">Сутки{% if period == 'day' %} ✓{% endif %}</a>
+    <a class="chip" href="?period=week">Неделя{% if period == 'week' %} ✓{% endif %}</a>
+    <a class="chip" href="?period=month">Месяц{% if period == 'month' %} ✓{% endif %}</a>
+    <a class="chip" href="?period=all">Всё время{% if period == 'all' %} ✓{% endif %}</a>
+  </div>
+{% endif %}
+{% if models %}
+  <div class="chips" style="margin-bottom:16px">
+    {% for m in models %}{% if m.n %}<a class="chip" href="{% url 'catalog:model' brand.slug m.slug %}">{{ m.name }} <small>{{ m.n }}</small></a>{% endif %}{% endfor %}
+  </div>
+{% endif %}
+{% if page.object_list %}
+  <div class="grid">{% for p in page %}{% include "catalog/_card.html" %}{% endfor %}</div>
+  {% include "catalog/_pager.html" %}
+{% else %}
+  <div class="panel">Здесь пока нет фото.</div>
+{% endif %}
+{% endblock %}

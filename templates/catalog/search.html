@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{% if norm %}Поиск: {{ q }}{% else %}Поиск{% endif %} — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1>Поиск по номеру</h1>
+<form class="filters" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Номер или его часть: 123ABC">
+  <select name="region">
+    <option value="">Все регионы</option>
+    {% for r in regions %}<option value="{{ r.code }}" {% if r.code == sel_region %}selected{% endif %}>{{ r.code }} — {{ r.name }}</option>{% endfor %}
+  </select>
+  <select name="brand">
+    <option value="">Все марки</option>
+    {% for b in brands %}<option value="{{ b.slug }}" {% if b.slug == sel_brand %}selected{% endif %}>{{ b.name }}</option>{% endfor %}
+  </select>
+  <button class="primary" type="submit" style="flex:0 0 auto">Искать</button>
+</form>
+
+{% if not searched %}
+  <p class="muted">Введите номер целиком или любую его часть. Пробелы, регистр, «KG» и кириллица роли не играют.</p>
+{% else %}
+  {% if plates %}
+    <h2>Найденные номера</h2>
+    <div class="chips">
+      {% for p in plates %}<a class="chip" href="{% url 'catalog:plate' p.plate %}"><span class="plate">{{ p.display }}</span> <small>{{ p.n }} фото</small></a>{% endfor %}
+    </div>
+  {% endif %}
+  <h2>Фото{% if page.paginator.count %} ({{ page.paginator.count }}){% endif %}</h2>
+  {% if page.object_list %}
+    <div class="grid">{% for p in page %}{% include "catalog/_card.html" %}{% endfor %}</div>
+    {% include "catalog/_pager.html" %}
+  {% else %}
+    <div class="panel">Ничего не найдено. Можно <a href="{% url 'catalog:upload' %}">добавить фото</a> этого номера.</div>
+  {% endif %}
+{% endif %}
+{% endblock %}

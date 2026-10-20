@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Модерация — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1>Модерация</h1>
+<div class="chips" style="margin-bottom:16px">
+  <a class="chip" href="?tab=pending">На проверке{% if tab == 'pending' %} ✓{% endif %}</a>
+  <a class="chip" href="?tab=reports">Жалобы{% if tab == 'reports' %} ✓{% endif %}</a>
+  <a class="chip" href="/admin/">Админка</a>
+</div>
+
+{% if tab == 'pending' %}
+  {% for p in page %}
+    <div class="panel mod-row">
+      <a href="{{ p.get_absolute_url }}"><img src="{{ p.thumb.url }}" alt=""></a>
+      <div>
+        <span class="plate">{{ p.plate_display }}</span>
+        <div class="muted small">
+          #{{ p.pk }} · {{ p.user.username }} · {{ p.created_at|date:"d.m.Y H:i" }}
+          {% if p.brand %} · {{ p.brand }} {{ p.car_model.name|default:'' }}{% endif %}
+        </div>
+        {% if p.description %}<p>{{ p.description }}</p>{% endif %}
+        <form method="post" action="{% url 'catalog:moderate_photo' p.pk %}" class="actions">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button class="primary" name="action" value="approve" type="submit">Опубликовать</button>
+          <input type="text" name="reason" placeholder="Причина отказа" style="flex:1;min-width:160px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text)">
+          <button class="secondary" name="action" value="reject" type="submit">Отклонить</button>
+        </form>
+      </div>
+    </div>
+  {% empty %}
+    <div class="panel">Очередь пуста 🎉</div>
+  {% endfor %}
+{% else %}
+  {% for r in page %}
+    <div class="panel mod-row">
+      <a href="{{ r.photo.get_absolute_url }}"><img src="{{ r.photo.thumb.url }}" alt=""></a>
+      <div>
+        <span class="plate">{{ r.photo.plate_display }}</span> <span class="tag">{{ r.get_reason_display }}</span>
+        <div class="muted small">{{ r.created_at|date:"d.m.Y H:i" }}{% if r.user %} · {{ r.user.username }}{% endif %}{% if r.contact %} · контакт: {{ r.contact }}{% endif %}</div>
+        {% if r.text %}<p>{{ r.text|linebreaksbr }}</p>{% endif %}
+        <form method="post" action="{% url 'catalog:moderate_report' r.pk %}" class="actions">
+          {% csrf_token %}
+          <button class="primary" name="action" value="remove_photo" type="submit">Скрыть фото</button>
+          <button class="secondary" name="action" value="dismiss" type="submit">Закрыть жалобу</button>
+        </form>
+      </div>
+    </div>
+  {% empty %}
+    <div class="panel">Открытых жалоб нет.</div>
+  {% endfor %}
+{% endif %}
+{% include "catalog/_pager.html" %}
+{% endblock %}

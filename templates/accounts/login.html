@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Вход — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1>Вход</h1>
+<form class="stack narrow" method="post">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <p>{{ form.username.label_tag }}{{ form.username }}{{ form.username.errors }}</p>
+  <p>{{ form.password.label_tag }}{{ form.password }}{{ form.password.errors }}</p>
+  <input type="hidden" name="next" value="{{ next }}">
+  <p><button class="primary" type="submit">Войти</button></p>
+  <p class="muted">Нет аккаунта? <a href="{% url 'accounts:register' %}">Зарегистрируйтесь</a></p>
+</form>
+{% endblock %}

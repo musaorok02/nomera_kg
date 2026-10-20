@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}{{ photo.plate_display }}{% if photo.brand %} {{ photo.brand }}{% endif %}{% if photo.car_model %} {{ photo.car_model.name }}{% endif %} — {{ SITE_NAME }}{% endblock %}
+{% block description %}Фото автомобиля с номером {{ photo.plate_display }}{% if photo.brand %}, {{ photo.brand }} {{ photo.car_model.name|default:'' }}{% endif %}.{% endblock %}
+{% block head %}
+  <meta property="og:title" content="{{ photo.plate_display }}">
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ photo.image.url }}">
+{% endblock %}
+{% block content %}
+{% if not photo.is_approved %}
+  <div class="panel">
+    Статус: <b>{{ photo.get_status_display }}</b>
+    {% if photo.reject_reason %} — {{ photo.reject_reason }}{% endif %}
+    {% if photo.status == 'pending' %}. Фото видно только вам и модераторам до проверки.{% endif %}
+  </div>
+{% endif %}
+
+<div class="cols" style="grid-template-columns:minmax(0,2fr) minmax(260px,1fr)">
+  <div>
+    <div class="photo-main"><img src="{{ photo.image.url }}" alt="{{ photo.plate_display }}"></div>
+
+    <div class="actions">
+      {% if photo.is_approved %}
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'catalog:like' photo.pk %}" id="like-form">{% csrf_token %}
+            <button class="secondary" type="submit" id="like-btn">{% if liked %}♥{% else %}♡{% endif %} <span id="like-count">{{ photo.likes_count }}</span></button>
+          </form>
+        {% else %}
+          <span class="muted">♥ {{ photo.likes_count }} · <a href="{% url 'accounts:login' %}?next={{ request.path }}">войдите</a>, чтобы поставить лайк</span>
+        {% endif %}
+        <a class="chip" href="{% url 'catalog:report' photo.pk %}">⚑ Пожаловаться / удалить фото</a>
+      {% endif %}
+      {% if user == photo.user or user.is_staff %}
+        <form method="post" action="{% url 'catalog:delete' photo.pk %}" onsubmit="return confirm('Удалить фото навсегда?')">{% csrf_token %}
+          <button class="secondary" type="submit">Удалить</button>
+        </form>
+      {% endif %}
+    </div>
+
+    {% if photo.description %}<p>{{ photo.description }}</p>{% endif %}
+
+    {% if photo.is_approved %}
+    <div class="panel">
+      <h2 style="margin-top:0">Комментарии ({{ photo.comments_count }})</h2>
+      {% for c in comments %}
+        <div class="comment">
+          <b><a href="{% url 'catalog:profile' c.user.username %}">{{ c.user.username }}</a></b>
+          <span class="muted small">{{ c.created_at|date:"d.m.Y H:i" }}</span>
+          <div>{{ c.text|linebreaksbr }}</div>
+        </div>
+      {% empty %}<p class="muted">Комментариев пока нет.</p>{% endfor %}
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'catalog:comment' photo.pk %}" class="stack">{% csrf_token %}
+          {{ comment_form.text }}
+          <p style="margin-top:8px"><button class="primary" type="submit">Отправить</button></p>
+        </form>
+      {% else %}
+        <p><a href="{% url 'accounts:login' %}?next={{ request.path }}">Войдите</a>, чтобы оставить комментарий.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <aside>
+    <div class="panel">
+      <a href="{% url 'catalog:plate' photo.plate %}"><span class="plate big">{{ photo.plate_display }}</span></a>
+      <dl class="facts" style="margin-top:14px">
+        {% if photo.brand %}<dt>Марка</dt><dd><a href="{% url 'catalog:brand' photo.brand.slug %}">{{ photo.brand }}</a></dd>{% endif %}
+        {% if photo.car_model %}<dt>Модель</dt><dd><a href="{% url 'catalog:model' photo.brand.slug photo.car_model.slug %}">{{ photo.car_model.name }}</a></dd>{% endif %}
+        {% if photo.region %}<dt>Регион</dt><dd><a href="{% url 'catalog:region' photo.region.code %}">{{ photo.region.code }} — {{ photo.region.name }}</a></dd>{% endif %}
+        {% if photo.city %}<dt>Место</dt><dd>{{ photo.city }}</dd>{% endif %}
+        {% if photo.shot_date %}<dt>Снято</dt><dd>{{ photo.shot_date|date:"d.m.Y" }}</dd>{% endif %}
+        <dt>Автор</dt><dd><a href="{% url 'catalog:profile' photo.user.username %}">{{ photo.user.username }}</a></dd>
+        <dt>Добавлено</dt><dd>{{ photo.created_at|date:"d.m.Y" }}</dd>
+        <dt>Просмотры</dt><dd>{{ photo.views }}</dd>
+      </dl>
+    </div>
+    {% if same_plate %}
+      <h2>Другие фото этого номера</h2>
+      <div class="grid" style="grid-template-columns:1fr 1fr">{% for p in same_plate %}{% include "catalog/_card.html" %}{% endfor %}</div>
+    {% endif %}
+  </aside>
+</div>
+
+{% if similar %}
+  <h2>Похожие: {{ photo.brand }} {{ photo.car_model.name }}</h2>
+  <div class="grid">{% for p in similar %}{% include "catalog/_card.html" %}{% endfor %}</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var form = document.getElementById('like-form');
+  if (!form) return;
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    fetch(form.action, {method: 'POST', body: new FormData(form),
+      headers: {'X-Requested-With': 'XMLHttpRequest'}, credentials: 'same-origin'})
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        document.getElementById('like-count').textContent = d.count;
+        document.getElementById('like-btn').firstChild.textContent = (d.liked ? '♥' : '♡') + ' ';
+      })
+      .catch(function () { form.submit(); });
+  });
+})();
+</script>
+{% endblock %}

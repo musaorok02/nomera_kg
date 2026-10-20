@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ SITE_NAME }} — фото автомобилей по госномерам Кыргызстана{% endblock %}</title>
+  <meta name="description" content="{% block description %}Каталог фотографий автомобилей Кыргызстана: поиск по госномеру, марке, региону.{% endblock %}">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <a class="logo" href="{% url 'catalog:home' %}">{{ SITE_NAME }}</a>
+    <form class="top-search" action="{% url 'catalog:search' %}" method="get">
+      <input type="search" name="q" value="{{ q|default:'' }}" placeholder="Поиск по номеру: 01 KG 123 ABC" aria-label="Поиск по номеру">
+      <button type="submit">Найти</button>
+    </form>
+    <nav class="nav">
+      <a href="{% url 'catalog:new' %}">Новые</a>
+      <a href="{% url 'catalog:top' %}">Лучшие</a>
+      <a href="{% url 'catalog:directory' %}">Каталог</a>
+      <a href="{% url 'catalog:stats' %}">Статистика</a>
+      {% if user.is_authenticated %}
+        <a class="btn" href="{% url 'catalog:upload' %}">+ Фото</a>
+        {% if user.is_staff %}
+          <a href="{% url 'catalog:moderation' %}">Модерация{% if pending_count or open_reports %} <span class="badge">{{ pending_count|add:open_reports }}</span>{% endif %}</a>
+        {% endif %}
+        <a href="{% url 'catalog:profile' user.username %}">{{ user.username }}</a>
+        <form class="inline" method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="link" type="submit">Выйти</button></form>
+      {% else %}
+        <a href="{% url 'accounts:login' %}?next={{ request.path }}">Войти</a>
+        <a class="btn" href="{% url 'accounts:register' %}">Регистрация</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  {% if messages %}
+    <ul class="messages">
+      {% for m in messages %}<li class="msg {{ m.tags }}">{{ m }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <a href="{% url 'catalog:about' %}">О проекте</a> ·
+    <a href="{% url 'catalog:rules' %}">Правила</a> ·
+    <a href="{% url 'catalog:privacy' %}">Конфиденциальность и удаление фото</a> ·
+    <a href="{% url 'catalog:api_search' %}?q=01">API</a>
+    <div class="muted">© {% now "Y" %} {{ SITE_NAME }}</div>
+  </div>
+</footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>

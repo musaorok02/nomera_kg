@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Фото автомобилей Кыргызстана по госномерам</h1>
+  <div class="muted">Найдите машину по номеру или добавьте свои снимки</div>
+  <form action="{% url 'catalog:search' %}" method="get">
+    <input type="search" name="q" placeholder="01 KG 123 ABC" autofocus aria-label="Госномер">
+    <button type="submit">Найти</button>
+  </form>
+  <div class="counters">
+    <div><b>{{ total_photos }}</b><span class="muted">фото</span></div>
+    <div><b>{{ total_plates }}</b><span class="muted">номеров</span></div>
+    <div><b>{{ total_users }}</b><span class="muted">авторов</span></div>
+  </div>
+</section>
+
+<h2>Новые фото</h2>
+{% if latest %}
+  <div class="grid">{% for p in latest %}{% include "catalog/_card.html" %}{% endfor %}</div>
+  <p><a href="{% url 'catalog:new' %}">Все новые фото →</a></p>
+{% else %}
+  <div class="panel">Пока нет ни одного фото. <a href="{% url 'catalog:upload' %}">Загрузите первое!</a></div>
+{% endif %}
+
+{% if top %}
+<h2>Лучшее за неделю</h2>
+<div class="grid">{% for p in top %}{% include "catalog/_card.html" %}{% endfor %}</div>
+{% endif %}
+
+<div class="cols">
+  <div>
+    <h2>Марки</h2>
+    <div class="chips">
+      {% for b in brands %}<a class="chip" href="{% url 'catalog:brand' b.slug %}">{{ b.name }} <small>{{ b.n }}</small></a>{% empty %}<span class="muted">Пока пусто</span>{% endfor %}
+    </div>
+  </div>
+  <div>
+    <h2>Регионы</h2>
+    <div class="chips">
+      {% for r in regions %}<a class="chip" href="{% url 'catalog:region' r.code %}">{{ r.code }} · {{ r.name }} <small>{{ r.n }}</small></a>{% empty %}<span class="muted">Пока пусто</span>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

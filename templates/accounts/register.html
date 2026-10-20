@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Регистрация — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1>Регистрация</h1>
+<form class="stack narrow" method="post">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  {% for f in form %}
+    <p>{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text|safe }}</span>{% endif %}{{ f.errors }}</p>
+  {% endfor %}
+  <p class="muted small">Регистрируясь, вы принимаете <a href="{% url 'catalog:rules' %}">правила</a> сайта.</p>
+  <p><button class="primary" type="submit">Создать аккаунт</button></p>
+</form>
+{% endblock %}

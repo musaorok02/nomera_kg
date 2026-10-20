@@ -1,0 +1,24 @@
+[Unit]
+Description=Nomera KG (Gunicorn)
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=nomera
+Group=nomera
+WorkingDirectory=/opt/nomera
+Environment=DJANGO_SETTINGS_MODULE=config.settings
+ExecStart=/opt/nomera/venv/bin/gunicorn config.wsgi:application \
+    --bind 127.0.0.1:8000 \
+    --workers 3 \
+    --timeout 60 \
+    --access-logfile - \
+    --error-logfile -
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
